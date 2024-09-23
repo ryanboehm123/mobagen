@@ -4,7 +4,27 @@
 #include <climits>
 bool RecursiveBacktrackerExample::Step(World* w) {
   // todo: implement this
-  return false;
+  std::vector<Point2D> visitables;
+  if(stack.size() <= 0) {
+    visitables = getVisitables(w, Point2D(0, 0));
+    w->SetNodeColor(Point2D(0, 0), Color::Red);
+  } else {
+    visitables = getVisitables(w, stack.back());
+    w->SetNodeColor(stack.back(), Color::Red);
+  }
+
+  if(visitables.empty()) {
+    //return false;
+  } else {
+    if(visitables.size() == 1) {
+      stack.push_back(visitables.front());
+      return true;
+    } else {
+      int random = rand() % visitables.size();
+      stack.push_back(visitables.at(random));
+      return true;
+    }
+  }
 }
 
 void RecursiveBacktrackerExample::Clear(World* world) {
@@ -33,7 +53,18 @@ std::vector<Point2D> RecursiveBacktrackerExample::getVisitables(World* w, const 
   auto sideOver2 = w->GetSize() / 2;
   std::vector<Point2D> visitables;
 
-  // todo: implement this
+  if(w->GetNode(p).GetNorth() && p.y < sideOver2) {
+    visitables.push_back(p.Up());
+  }
+  if(w->GetNode(p).GetEast() && p.x < sideOver2) {
+    visitables.push_back(p.Right());
+  }
+  if(w->GetNode(p).GetSouth() && p.y < sideOver2) {
+    visitables.push_back(p.Down());
+  }
+  if(w->GetNode(p).GetWest() && p.x < sideOver2) {
+    visitables.push_back(p.Left());
+  }
 
   return visitables;
 }

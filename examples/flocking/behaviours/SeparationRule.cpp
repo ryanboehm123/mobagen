@@ -13,18 +13,17 @@ Vector2f SeparationRule::computeForce(const std::vector<Boid*>& neighborhood, Bo
       continue;
     }
     //calculate the sep vector
-    Vector2f sepVec = { boid->getPosition().x - b->getPosition().x, boid->getPosition().y - b->getPosition().y };
-    float dist = sqrt(sepVec.x * sepVec.x + sepVec.y * sepVec.y);
+    Vector2f sepVec = boid->getPosition() - b->getPosition();
+    float dist = sepVec.getMagnitude();
     //if it is inside the sep radius, accumulate the force
     if(dist < desiredMinimalDistance && dist > 0.01f) {
       //normalize the sep vector
-      sepVec = { sepVec.x/dist, sepVec.y/dist };
+      sepVec /= dist;
       float force = 1/dist;
-      separatingForce = { separatingForce.x + sepVec.x * force, separatingForce.y + sepVec.y * force };
+      force *= desiredMinimalDistance;
+      separatingForce += sepVec * force;
     }
   }
-
-  separatingForce = Vector2f::normalized(separatingForce);
 
   return separatingForce;
 }
