@@ -7,51 +7,34 @@ bool RecursiveBacktrackerExample::Step(World* w) {
   std::vector<Point2D> visitables;
   if(stack.size() <= 0) {
     visitables = getVisitables(w, Point2D(0, 0));
-    w->SetNodeColor(Point2D(0, 0), Color::White);
+    w->SetNodeColor(Point2D(0, 0), Color::DarkRed);
     stack.push_back(Point2D(0, 0));
     visited[0][0] = true;
   } else {
     visitables = getVisitables(w, stack.back());
-    w->SetNodeColor(stack.back(), Color::White);
+    w->SetNodeColor(stack.back(), Color::DarkRed);
   }
 
   if(visitables.empty()) {
-    //return false;
+    w->SetNodeColor(stack.back(), Color::Black);
+    stack.pop_back();
   } else {
-    if(visitables.size() == 1) {
-      int direction = getDirection(w, stack.back(), visitables.front());
-      if(direction == 1) { // North
-        w->SetNorth(visitables.front(), true);
-      } else if(direction == 2) { // East
-        w->SetEast(visitables.front(), true);
-      } else if(direction == 3) { // South
-        w->SetSouth(visitables.front(), true);
-      } else if(direction == 4) { // West
-        w->SetWest(visitables.front(), true);
-      } else {
-        return false;
-      }
-      visited[visitables.front().x][visitables.front().y] = true;
-      stack.push_back(visitables.front());
-      return true;
-    } else {
       int random = rand() % visitables.size();
       int direction = getDirection(w, stack.back(), visitables.at(random));
       if(direction == 1) { // North
-        w->SetNorth(visitables.at(random), true);
+        w->SetSouth(stack.back(), false); // Set south because north on a grid is downward
       } else if(direction == 2) { // East
-        w->SetEast(visitables.at(random), true);
+        w->SetEast(stack.back(), false);
       } else if(direction == 3) { // South
-        w->SetSouth(visitables.at(random), true);
+        w->SetNorth(stack.back(), false); // Set north because south on a grid is upward
       } else if(direction == 4) { // West
-        w->SetWest(visitables.at(random), true);
+        w->SetWest(stack.back(), false);
       } else {
         return false;
       }
       visited[visitables.at(random).x][visitables.at(random).y] = true;
       stack.push_back(visitables.at(random));
       return true;
-    }
   }
 }
 
