@@ -18,6 +18,7 @@ bool RecursiveBacktrackerExample::Step(World* w) {
   if(visitables.empty()) {
     w->SetNodeColor(stack.back(), Color::Black);
     stack.pop_back();
+    return true;
   } else {
       int random = rand() % visitables.size();
       int direction = getDirection(w, stack.back(), visitables.at(random));
