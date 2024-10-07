@@ -5,9 +5,17 @@
 #include "World.h"
 #include "../../cmake-build-debug/_deps/sdl2-src/src/render/software/SDL_draw.h"
 using namespace std;
+Point2D findClosestBorder(World* w, Point2D catPos) {
+  int sideSizeOver2 = w->getWorldSideSize() / 2;
+  if(ABS(catPos.x - sideSizeOver2) < ABS(catPos.y - sideSizeOver2)) {
+  Point2D cat = catPos;
+  //check which border the cat is closest to
+
+}
+
 std::vector<Point2D> Agent::generatePath(World* w) {
   unordered_map<Point2D, Point2D> cameFrom;  // to build the flowfield and build the path
-  queue<Point2D> frontier;                   // to store next ones to visit
+  queue<AStarNode> frontier;                   // to store next ones to visit
   unordered_set<Point2D> frontierSet;        // OPTIMIZATION to check faster if a point is in the queue
   unordered_map<Point2D, bool> visited;      // use .at() to get data, if the element dont exist [] will give you wrong results
 
