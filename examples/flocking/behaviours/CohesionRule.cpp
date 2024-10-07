@@ -14,7 +14,8 @@ Vector2f CohesionRule::computeForce(const std::vector<Boid*>& neighborhood, Boid
   if(neighborhood.size() > 0) {
     //centerOfMass = Vector2f::normalized(centerOfMass);
     centerOfMass /= neighborhood.size();
-    cohesionForce = { centerOfMass.x - boid->getPosition().x, centerOfMass.y - boid->getPosition().y } / boid->getDetectionRadius();
+    cohesionForce = { centerOfMass.x - boid->getPosition().x, centerOfMass.y - boid->getPosition().y };
+    cohesionForce /= boid->getDetectionRadius();
   }
 
   return Vector2f::normalized(cohesionForce);

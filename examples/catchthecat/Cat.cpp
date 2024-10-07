@@ -3,8 +3,10 @@
 #include <stdexcept>
 
 Point2D Cat::Move(World* world) {
-  //todo: implement pathfinding algorithm for the cat
   auto pos = world->getCat();
+  std::vector<Point2D> path = generatePath(world);
+  if(path.size() != 0)
+    return path.back();
   std::vector<Point2D> validMoves;
   if(world->catCanMoveToPosition(World::NE(pos))) validMoves.push_back(World::NE(pos));
   if(world->catCanMoveToPosition(World::NW(pos))) validMoves.push_back(World::NW(pos));
