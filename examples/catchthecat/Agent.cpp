@@ -5,25 +5,30 @@
 #include "World.h"
 #include "../../cmake-build-debug/_deps/sdl2-src/src/render/software/SDL_draw.h"
 using namespace std;
-Point2D findClosestBorder(World* w, Point2D catPos) {
+int distanceToClosestBorder(World* w, Point2D catPos) {
   int sideSizeOver2 = w->getWorldSideSize() / 2;
-  if(ABS(catPos.x - sideSizeOver2) < ABS(catPos.y - sideSizeOver2)) {
-  Point2D cat = catPos;
-  //check which border the cat is closest to
-
+  if(catPos.x >= ABS(catPos.y)) {
+    return sideSizeOver2 - catPos.x;
+  } else if(catPos.x < -ABS(catPos.y)) {
+    return sideSizeOver2 + catPos.x;
+  } else if(catPos.y >= ABS(catPos.x)) {
+    return sideSizeOver2 - catPos.y;
+  } else {
+    return sideSizeOver2 + catPos.y;
+  }
 }
 
 std::vector<Point2D> Agent::generatePath(World* w) {
   unordered_map<Point2D, Point2D> cameFrom;  // to build the flowfield and build the path
   queue<AStarNode> frontier;                   // to store next ones to visit
-  unordered_set<Point2D> frontierSet;        // OPTIMIZATION to check faster if a point is in the queue
   unordered_map<Point2D, bool> visited;      // use .at() to get data, if the element dont exist [] will give you wrong results
 
   // bootstrap state
   auto catPos = w->getCat();
-  frontier.push(catPos);
-  frontierSet.insert(catPos);
+  frontier.push(AStarNode(catPos, 1, distanceToClosestBorder(w, catPos)));
   Point2D borderExit = Point2D::INFINITE;  // if at the end of the loop we dont find a border, we have to return random points
+  AStarNode current = frontier.front();
+  frontier.pop();
 
   while (!frontier.empty()) {
     // get the current from frontier
@@ -34,49 +39,60 @@ std::vector<Point2D> Agent::generatePath(World* w) {
     // for every neighbor set the cameFrom
     // enqueue the neighbors to frontier and frontierset
     // do this up to find a visitable border and break the loop
-    Point2D current = frontier.front();
-    frontier.pop();
-    frontierSet.erase(current);
-    visited[current] = true;
-    vector<Point2D> visitableNeighbors;
+    visited[current.position] = true;
+    vector<AStarNode> visitableNeighbors;
     int sideSize = w->getWorldSideSize();
-    if(ABS(current.x) >= sideSize/2 || ABS(current.y) == sideSize/2) {
-      borderExit = current;
+    if(ABS(current.position.x) >= sideSize/2 || ABS(current.position.y) == sideSize/2) {
+      borderExit = current.position;
       while(!frontier.empty()) {
         frontier.pop();
       }
       break;
     }
-    if(!visited[w->NW(current)] && !w->getContent(w->NW(current))) {
-      visitableNeighbors.push_back(w->NW(current));
-      visited[w->NW(current)] = true;
+    if(!visited[w->NW(current.position)] && !w->getContent(w->NW(current.position))) {
+      visitableNeighbors.push_back(AStarNode(w->NW(current.position), current.accCost + 1,
+        distanceToClosestBorder(w, w->NW(current.position))));
+      visited[w->NW(current.position)] = true;
     }
-    if(!visited[w->NE(current)] && !w->getContent(w->NE(current))) {
-      visitableNeighbors.push_back(w->NE(current));
-      visited[w->NE(current)] = true;
+    if(!visited[w->NE(current.position)] && !w->getContent(w->NE(current.position))) {
+      visitableNeighbors.push_back(AStarNode(w->NE(current.position), current.accCost + 1,
+        distanceToClosestBorder(w, w->NE(current.position))));
+      visited[w->NE(current.position)] = true;
     }
-    if(!visited[w->SW(current)] && !w->getContent(w->SW(current))) {
-      visitableNeighbors.push_back(w->SW(current));
-      visited[w->SW(current)] = true;
+    if(!visited[w->SW(current.position)] && !w->getContent(w->SW(current.position))) {
+      visitableNeighbors.push_back(AStarNode(w->SW(current.position), current.accCost + 1,
+        distanceToClosestBorder(w, w->SW(current.position))));
+      visited[w->SW(current.position)] = true;
     }
-    if(!visited[w->SE(current)] && !w->getContent(w->SE(current))) {
-      visitableNeighbors.push_back(w->SE(current));
-      visited[w->SE(current)] = true;
+    if(!visited[w->SE(current.position)] && !w->getContent(w->SE(current.position))) {
+      visitableNeighbors.push_back(AStarNode(w->SE(current.position), current.accCost + 1,
+        distanceToClosestBorder(w, w->SE(current.position))));
+      visited[w->SE(current.position)] = true;
     }
-    if(!visited[w->E(current)] && !w->getContent(w->E(current))) {
-      visitableNeighbors.push_back(w->E(current));
-      visited[w->E(current)] = true;
+    if(!visited[w->E(current.position)] && !w->getContent(w->E(current.position))) {
+      visitableNeighbors.push_back(AStarNode(w->E(current.position), current.accCost + 1,
+        distanceToClosestBorder(w, w->E(current.position))));
+      visited[w->E(current.position)] = true;
     }
-    if(!visited[w->W(current)] && !w->getContent(w->W(current))) {
-      visitableNeighbors.push_back(w->W(current));
-      visited[w->W(current)] = true;
+    if(!visited[w->W(current.position)] && !w->getContent(w->W(current.position))) {
+      visitableNeighbors.push_back(AStarNode(w->W(current.position), current.accCost + 1,
+        distanceToClosestBorder(w, w->W(current.position))));
+      visited[w->W(current.position)] = true;
     }
 
     for(int i = 0; i < visitableNeighbors.size(); i++) {
-      cameFrom[visitableNeighbors[i]] = current;
+      cameFrom[visitableNeighbors[i].position] = current.position;
       frontier.push(visitableNeighbors[i]);
-      frontierSet.insert(visitableNeighbors[i]);
     }
+
+    AStarNode lowestDistance = visitableNeighbors[0];
+    for(int i = 0; i < visitableNeighbors.size(); i++) {
+      if(visitableNeighbors[i].heuristic < lowestDistance.heuristic) {
+        lowestDistance = visitableNeighbors[i];
+      }
+    }
+
+    current = lowestDistance;
   }
 
   // if the border is not infinity, build the path from border to the cat using the camefrom map

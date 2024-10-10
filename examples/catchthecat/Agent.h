@@ -11,18 +11,18 @@ public:
 
   virtual Point2D Move(World*) = 0;
 
-  Point2D findClosestBorder(World* w, Point2D catPos);
+  int distanceToClosestBorder(World* w, Point2D catPos);
 
   std::vector<Point2D> generatePath(World* w);
 
   struct AStarNode {
     Point2D position;
-    int accDistance;
+    int accCost;
     int heuristic;
-    AStarNode* cameFrom;
+    //AStarNode* cameFrom;
 
     bool operator < (const AStarNode& rhs) const {
-      return (accDistance + heuristic) > (rhs.accDistance + rhs.heuristic);
+      return (accCost + heuristic) > (rhs.accCost + rhs.heuristic);
     }
   };
 };
