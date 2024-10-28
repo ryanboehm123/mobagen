@@ -105,7 +105,7 @@ void ParticleGenerator::Erode(float dt) {
   // Do a series of iterations! (5 Particles)
   for (int i = 0; i < cycles; i++) {
     // Spawn New Particle
-    glm::vec2 startPos = glm::vec2(Random::Range(1, (int)sideSizeCached - 2), Random::Range(1, (int)sideSizeCached - 2));
+    glm::vec2 startPos = glm::vec2(Random::Range(1.0, (float)sideSizeCached - 2), Random::Range(1.0, (float)sideSizeCached - 2));
     Particle drop(startPos);
 
     glm::vec2 dim = glm::vec2(sideSizeCached, sideSizeCached);
@@ -132,7 +132,7 @@ void ParticleGenerator::Erode(float dt) {
         time-scaling is correctly implemented like above.
       */
 
-      if ((int)drop.pos.x < 0 || (int)drop.pos.y < 0 || (int)drop.pos.x >= sideSizeCached || (int)drop.pos.y >= sideSizeCached) break;
+      if (drop.pos.x < 0 || drop.pos.y < 0 || drop.pos.x >= sideSizeCached || drop.pos.y >= sideSizeCached) break;
 
       // Compute sediment capacity difference
       float maxsediment = drop.volume * glm::length(drop.speed) * (heights[ipos.x][ipos.y] - heights[(int)drop.pos.x][(int)drop.pos.y]);
