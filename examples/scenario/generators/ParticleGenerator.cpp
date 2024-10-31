@@ -134,6 +134,12 @@ void ParticleGenerator::Erode(float dt) {
 
       if (drop.pos.x < 0 || drop.pos.y < 0 || drop.pos.x >= sideSizeCached || drop.pos.y >= sideSizeCached) break;
 
+      // Determine ratios between tiles
+      int upperEndX = drop.pos.x + 1;
+      int upperEndY = drop.pos.y + 1;
+      float ratioX = upperEndX - drop.pos.x;
+      float ratioY = upperEndY - drop.pos.y;
+
       // Compute sediment capacity difference
       float maxsediment = drop.volume * glm::length(drop.speed) * (heights[ipos.x][ipos.y] - heights[(int)drop.pos.x][(int)drop.pos.y]);
       if (maxsediment < 0.0) maxsediment = 0.0;
@@ -142,6 +148,34 @@ void ParticleGenerator::Erode(float dt) {
       // Act on the heights and Droplet!
       drop.sediment += dt * depositionRate * sdiff;
       heights[ipos.x][ipos.y] -= dt * drop.volume * depositionRate * sdiff;
+
+      if (ratioX >= 0.5) { // droplet landed on the right edge of the tile, splashing on the right tile
+        float maxsedimentNew = (drop.volume * (1 - ratioX)) * glm::length(drop.speed) * (heights[ipos.x + 1][ipos.y] - heights[(int)drop.pos.x][(int)drop.pos.y]);
+        float sdiffNew = maxsedimentNew - drop.sediment;
+
+        drop.sediment += dt * depositionRate * sdiffNew;
+        heights[ipos.x + 1][ipos.y] -= dt * (drop.volume * (1 - ratioX)) * depositionRate * sdiffNew;
+      } else { // droplet landed on the left edge of the tile, splashing on the left tile
+        float maxsedimentNew = (drop.volume * ratioX) * glm::length(drop.speed) * (heights[ipos.x - 1][ipos.y] - heights[(int)drop.pos.x][(int)drop.pos.y]);
+        float sdiffNew = maxsedimentNew - drop.sediment;
+
+        drop.sediment += dt * depositionRate * sdiffNew;
+        heights[ipos.x - 1][ipos.y] -= dt * (drop.volume * ratioX) * depositionRate * sdiffNew;
+      }
+
+      if (ratioY >= 0.5) { // droplet landed on the right edge of the tile, splashing on the right tile
+        float maxsedimentNew = (drop.volume * (1 - ratioY)) * glm::length(drop.speed) * (heights[ipos.x][ipos.y + 1] - heights[(int)drop.pos.x][(int)drop.pos.y]);
+        float sdiffNew = maxsedimentNew - drop.sediment;
+
+        drop.sediment += dt * depositionRate * sdiffNew;
+        heights[ipos.x][ipos.y + 1] -= dt * (drop.volume * (1 - ratioY)) * depositionRate * sdiffNew;
+      } else { // droplet landed on the left edge of the tile, splashing on the left tile
+        float maxsedimentNew = (drop.volume * ratioY) * glm::length(drop.speed) * (heights[ipos.x][ipos.y - 1] - heights[(int)drop.pos.x][(int)drop.pos.y]);
+        float sdiffNew = maxsedimentNew - drop.sediment;
+
+        drop.sediment += dt * depositionRate * sdiffNew;
+        heights[ipos.x][ipos.y - 1] -= dt * (drop.volume * ratioY) * depositionRate * sdiffNew;
+      }
 
       // Evaporate the Droplet (Note: Proportional to Volume! Better: Use shape factor to make proportional to the area instead.)
       drop.volume *= (1.0f - dt * evapRate);
